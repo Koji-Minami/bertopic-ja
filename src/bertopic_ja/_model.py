@@ -95,7 +95,7 @@ class BERTopic(_BERTopic):
         self.umap_model = self._make_umap(len(docs))
         self.hdbscan_model = self._make_hdbscan(self.ja_config.min_topic_size)
         if embeddings is None:
-            if not isinstance(self.embedd_model, BaseEmbedder):
+            if not isinstance(self.embedding_model, BaseEmbedder):
                 self.embedding_model = select_backend(self.embedding_model, language=self.language)
             embeddings = self.embedding_model.embed(docs)
         self._embeddings = embeddings
@@ -105,8 +105,7 @@ class BERTopic(_BERTopic):
             topics = self._apply_outlier_reduction(docs, topics)
         self._drop_blank_topic_words()
         self._fitted = True
-        return topics,probs
-
+        return topics, probs
     def exclude(self, *words: str | list[str]) -> pd.DataFrame | None:
         """トピック語から外す。埋め込みとクラスタは変えない。"""
         for word in _flatten(words):
