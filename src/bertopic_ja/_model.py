@@ -99,13 +99,13 @@ class BERTopic(_BERTopic):
                 self.embedding_model = select_backend(self.embedding_model, language=self.language)
             embeddings = self.embedding_model.embed(docs)
         self._embeddings = embeddings
-        topics, probs = super().fit_transform(docs, embeddings=embeddings, **kwargs)        
-        if self.ja_config.reduce_outliers:            
-        topics = self._apply_outlier_reduction(docs, topics)
+        topics, probs = super().fit_transform(docs, embeddings=embeddings, **kwargs)
+        if self.ja_config.reduce_outliers:
+            topics = self._apply_outlier_reduction(docs, topics)
         self._drop_blank_topic_words()
         self._fitted = True
         return topics, probs
-    
+
     def exclude(self, *words: str | list[str]) -> pd.DataFrame | None:
         """トピック語から外す。埋め込みとクラスタは変えない。"""
         for word in _flatten(words):
