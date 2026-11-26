@@ -105,7 +105,7 @@ class BERTopic(_BERTopic):
             topics = self._apply_outlier_reduction(docs, topics)
         self._drop_blank_topic_words()
         self._fitted = True
-        return topics, probs
+        return topics,probs
 
     def exclude(self, *words: str | list[str]) -> pd.DataFrame | None:
         """トピック語から外す。埋め込みとクラスタは変えない。"""
