@@ -7,6 +7,8 @@ from typing import Any
 
 import pandas as pd
 from bertopic import BERTopic as _BERTopic
+from bertopic.backend import BaseEmbedder
+from bertopic.backend._utils import select_backend
 from bertopic.representation import KeyBERTInspired
 from hdbscan import HDBSCAN
 from umap import UMAP
@@ -93,10 +95,13 @@ class BERTopic(_BERTopic):
         self.umap_model = self._make_umap(len(docs))
         self.hdbscan_model = self._make_hdbscan(self.ja_config.min_topic_size)
         if embeddings is None:
+            if not isinstance(self.embedd_model, BaseEmbedder):
+                self.embedding_model = select_backend(self.embedding_model, language=self.language)
             embeddings = self.embedding_model.embed(docs)
         self._embeddings = embeddings
         topics, probs = super().fit_transform(docs, embeddings=embeddings, **kwargs)
         if self.ja_config.reduce_outliers:
+            
             topics = self._apply_outlier_reduction(docs, topics)
         self._drop_blank_topic_words()
         self._fitted = True
