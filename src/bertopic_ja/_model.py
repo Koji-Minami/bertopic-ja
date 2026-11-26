@@ -99,8 +99,7 @@ class BERTopic(_BERTopic):
                 self.embedding_model = select_backend(self.embedding_model, language=self.language)
             embeddings = self.embedding_model.embed(docs)
         self._embeddings = embeddings
-        topics, probs = super().fit_transform(docs, embeddings=embeddings, **kwargs)
-        
+        topics, probs = super().fit_transform(docs, embeddings=embeddings, **kwargs)        
         if self.ja_config.reduce_outliers:            
         topics = self._apply_outlier_reduction(docs, topics)
         self._drop_blank_topic_words()
