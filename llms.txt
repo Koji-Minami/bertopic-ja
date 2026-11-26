@@ -42,7 +42,7 @@ topics, probs = topic_model.fit_transform(docs)
 - `preview_exclude(words)`: 除外後のトピック語を、設定を変えずに見る。
 - `from_yaml(path, **overrides)` / `to_yaml(path)`: 同じ設定項目。引数が YAML を上書きする。
 
-フィラー（えー、あのー、まあ）はトピック語からだけ最初から外す。本文には残す。「あの車」の「あの」は消さない。本文から消すときだけ `fillers=` を渡す。
+フィラー（えー、あのー、まあ）はトピック語からだけ最初から外す。本文には残す。「あの本」の「あの」は消さない。本文から消すときだけ `fillers=` を渡す。
 
 UMAP と HDBSCAN はユーザーが書かない。触る粗さは `min_topic_size`。
 

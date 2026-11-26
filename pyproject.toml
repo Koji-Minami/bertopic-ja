@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bertopic-ja"
-version = "0.1.0"
+version = "0.1.1"
 description = "日本語の文書から、どんなトピックが話されているかを探索するための BERTopic。Sudachi でトピック語を分かち書きします。"
 readme = "README.md"
 license = "MIT"

@@ -16,7 +16,7 @@ class HashEmbedder(BaseEmbedder):
         for document in documents:
             if "猫" in document:
                 base = np.array([1.0, 0.0, 0.0, 0.0], dtype=float)
-            elif "車" in document or "ローン" in document:
+            elif "料理" in document or "野菜" in document:
                 base = np.array([0.0, 1.0, 0.0, 0.0], dtype=float)
             else:
                 digest = hashlib.sha256(document.encode()).digest()

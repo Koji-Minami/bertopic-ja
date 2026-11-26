@@ -24,7 +24,7 @@ topics, probs = topic_model.fit_transform(docs)
 topic_model.get_topic_info()
 ```
 
-何も指定しないときの埋め込みは、BERTopic の `language="multilingual"`（`paraphrase-multilingual-MiniLM-L12-v2`）です。トピック語は Sudachi（分割モード C）の名詞です。1文字の名詞、代名詞、数詞は出しません。「えー」「まあ」のようなフィラーはトピック語から外し、本文には残します。「あの車」の「あの」は消しません。
+何も指定しないときの埋め込みは、BERTopic の `language="multilingual"`（`paraphrase-multilingual-MiniLM-L12-v2`）です。トピック語は Sudachi（分割モード C）の名詞です。1文字の名詞、代名詞、数詞は出しません。「えー」「まあ」のようなフィラーはトピック語から外し、本文には残します。「あの本」の「あの」は消しません。
 
 トピックの粗さは `min_topic_size` です。UMAP と HDBSCAN は自分で組みません。
 
@@ -37,10 +37,10 @@ topic_model = BERTopic(min_topic_size=8)
 トピック語から外すだけなら、埋め込みはやり直しません。
 
 ```python
-topic_model.exclude("残価", "月々")
+topic_model.exclude("天気", "気温")
 topic_model.suggest()
-topic_model.explain("残価設定って聞いてることあります？")
-topic_model.preview_exclude(["残価"])
+topic_model.explain("このレシピって作ったことあります？")
+topic_model.preview_exclude(["天気"])
 ```
 
 クラスタの数や粗さを変えるときは、保存してある埋め込みで学習し直します。
@@ -72,9 +72,9 @@ nr_topics: auto
 reduce_outliers: true
 embedding_model: null
 exclude:
-  - 残価
+  - 天気
 protect:
-  - 金利
+  - レシピ
 fillers: []
 ```
 

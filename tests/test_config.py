@@ -4,13 +4,13 @@ from bertopic_ja._config import Config
 def test_yaml_values_are_overridden_by_arguments(tmp_path):
     path = tmp_path / "config.yaml"
     path.write_text(
-        "min_topic_size: 10\nexclude:\n  - 残価\nprotect:\n  - 金利\n",
+        "min_topic_size: 10\nexclude:\n  - 天気\nprotect:\n  - レシピ\n",
         encoding="utf-8",
     )
     config = Config.from_yaml(path, {"min_topic_size": 8})
     assert config.min_topic_size == 8
-    assert config.exclude == ["残価"]
-    assert config.protect == ["金利"]
+    assert config.exclude == ["天気"]
+    assert config.protect == ["レシピ"]
     assert config.embedding_model is None
     assert config.fillers == []
 
@@ -28,9 +28,9 @@ def test_unknown_yaml_key_is_rejected(tmp_path):
 
 def test_round_trip_yaml(tmp_path):
     path = tmp_path / "config.yaml"
-    config = Config(min_topic_size=8, exclude=["月々"], nr_topics="auto")
+    config = Config(min_topic_size=8, exclude=["天気"], nr_topics="auto")
     config.to_yaml(path)
     loaded = Config.from_yaml(path)
     assert loaded.min_topic_size == 8
-    assert loaded.exclude == ["月々"]
+    assert loaded.exclude == ["天気"]
     assert loaded.nr_topics == "auto"

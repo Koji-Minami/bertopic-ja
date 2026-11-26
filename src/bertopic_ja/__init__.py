@@ -11,4 +11,4 @@ https://arxiv.org/abs/2203.05794
 from bertopic_ja._model import BERTopic
 
 __all__ = ["BERTopic"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"
