@@ -76,6 +76,37 @@ def test_topic_words_are_content_nouns():
     assert "野菜" in words
 
 
+def test_from_yaml_pos_reaches_the_analyzer(tmp_path):
+    path = tmp_path / "config.yaml"
+    path.write_text("pos:\n  - 名詞\nmin_topic_size: 4\n", encoding="utf-8")
+    model = BERTopic.from_yaml(
+        path,
+        embedding_model=HashEmbedder(),
+        n_neighbors=5,
+        reduce_outliers=False,
+    )
+    assert model.ja_config.pos == ["名詞"]
+    tokens = model.vectorizer_model.build_analyzer()("高い病院で使いにくかった")
+    assert tokens == ["病院"]
+
+
+def test_default_analyzer_keeps_lemmas():
+    model = BERTopic(embedding_model=HashEmbedder(), min_topic_size=4, n_neighbors=5)
+    tokens = model.vectorizer_model.build_analyzer()("使いにくかった製品は高かった。道具を使った。")
+    assert tokens == ["使いにくい", "製品", "高い", "道具", "使う"]
+    assert model.ja_config.stopwords == []
+
+
+def test_exclude_drops_a_verb_without_a_preset_list():
+    model = BERTopic(embedding_model=HashEmbedder(), min_topic_size=4, n_neighbors=5, stopwords=["こと"])
+    analyzer = model.vectorizer_model.build_analyzer()
+    assert "見る" in analyzer("良い方法を見る")
+    assert "こと" not in analyzer("作ったことがある")
+    model.exclude("見る")
+    assert "見る" not in model.vectorizer_model.build_analyzer()("良い方法を見る")
+    assert "方法" in model.vectorizer_model.build_analyzer()("良い方法を見る")
+
+
 def test_embeddings_follow_the_documents():
     embedder = HashEmbedder()
     vectors = embedder.embed(["猫", "料理"])

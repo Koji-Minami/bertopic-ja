@@ -17,7 +17,14 @@ _FIELDS = (
     "exclude",
     "protect",
     "fillers",
+    "pos",
+    "stopwords",
 )
+
+def _default_pos() -> list[str]:
+    from bertopic_ja._tokenizer import DEFAULT_POS
+
+    return list(DEFAULT_POS)
 
 
 @dataclass
@@ -32,6 +39,8 @@ class Config:
     exclude: list[str] = field(default_factory=list)
     protect: list[str] = field(default_factory=list)
     fillers: list[str] = field(default_factory=list)
+    pos: list[str] = field(default_factory=_default_pos)
+    stopwords: list[str] = field(default_factory=list)
 
     @classmethod
     def from_mapping(cls, data: dict[str, Any] | None, overrides: dict[str, Any] | None = None) -> Config:
@@ -42,7 +51,7 @@ class Config:
         if unknown:
             names = ", ".join(unknown)
             raise ValueError(f"未知の設定項目です: {names}")
-        for key in ("exclude", "protect", "fillers"):
+        for key in ("exclude", "protect", "fillers", "stopwords"):
             value = merged.get(key)
             if value is None:
                 merged[key] = []
@@ -50,6 +59,12 @@ class Config:
                 raise ValueError(f"{key} は文字列のリストです。")
             else:
                 merged[key] = [str(item) for item in value]
+        if "pos" not in merged or merged["pos"] is None:
+            merged.pop("pos", None)
+        elif not isinstance(merged["pos"], list):
+            raise ValueError("pos は文字列のリストです。")
+        else:
+            merged["pos"] = [str(item) for item in merged["pos"]]
         if "min_topic_size" in merged:
             merged["min_topic_size"] = int(merged["min_topic_size"])
         if "n_neighbors" in merged and merged["n_neighbors"] is not None:
@@ -76,6 +91,8 @@ class Config:
             "exclude": list(self.exclude),
             "protect": list(self.protect),
             "fillers": list(self.fillers),
+            "pos": list(self.pos),
+            "stopwords": list(self.stopwords),
         }
 
     def to_yaml(self, path: str | Path) -> None:

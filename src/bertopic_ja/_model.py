@@ -14,7 +14,7 @@ from hdbscan import HDBSCAN
 from umap import UMAP
 
 from bertopic_ja._config import Config
-from bertopic_ja._tokenizer import build_vectorizer, explain_text, strip_fillers
+from bertopic_ja._tokenizer import DEFAULT_POS, build_vectorizer, explain_text, strip_fillers
 
 
 class BERTopic(_BERTopic):
@@ -22,7 +22,7 @@ class BERTopic(_BERTopic):
 
     呼び出し方は公式の BERTopic と同じです。埋め込みの初期値は
     ``language="multilingual"`` です。トピック語は Sudachi（モード C）の
-    名詞で、フィラーはトピック語からだけ外します。
+    名詞・形容詞・動詞で、フィラーはトピック語からだけ外します。
 
     これは Maarten Grootendorst の BERTopic の公式サブプロジェクトでは
     ありません。https://github.com/MaartenGr/BERTopic
@@ -39,6 +39,8 @@ class BERTopic(_BERTopic):
         exclude: list[str] | None = None,
         protect: list[str] | None = None,
         fillers: list[str] | None = None,
+        pos: list[str] | None = None,
+        stopwords: list[str] | None = None,
     ) -> None:
         self.ja_config = Config(
             min_topic_size=min_topic_size,
@@ -49,6 +51,8 @@ class BERTopic(_BERTopic):
             exclude=list(exclude or []),
             protect=list(protect or []),
             fillers=list(fillers or []),
+            pos=list(DEFAULT_POS if pos is None else pos),
+            stopwords=list(stopwords or []),
         )
         self._documents: list[str] = []
         self._embeddings = None
@@ -82,6 +86,8 @@ class BERTopic(_BERTopic):
             exclude=config.exclude,
             protect=config.protect,
             fillers=config.fillers,
+            pos=config.pos,
+            stopwords=config.stopwords,
         )
 
     def to_yaml(self, path: str | Path) -> None:
@@ -270,7 +276,7 @@ class BERTopic(_BERTopic):
         )
 
     def _drop_blank_topic_words(self) -> None:
-        """空文字だけのトピック語を、そのトピックの名詞の出現順に戻す。
+        """空文字だけのトピック語を、そのトピックに残った語の出現順に戻す。
 
         KeyBERTInspired は候補語が少ないと空文字を足す。類似度で空文字が
         上位になると、トピック名が空白になる。
