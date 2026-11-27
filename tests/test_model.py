@@ -81,3 +81,32 @@ def test_embeddings_follow_the_documents():
     vectors = embedder.embed(["猫", "料理"])
     assert np.argmax(vectors[0]) == 0
     assert np.argmax(vectors[1]) == 1
+
+
+def test_fit_resolves_default_embedding_model(monkeypatch):
+    backend = HashEmbedder()
+    monkeypatch.setattr(
+        "bertopic_ja._model.select_backend",
+        lambda model, language=None: backend,
+    )
+    model = BERTopic(min_topic_size=4, n_neighbors=5, reduce_outliers=False)
+    topics, _probs = model.fit_transform(_documents())
+    assert model.embedding_model is backend
+    assert len(topics) == 16
+
+
+def test_fit_resolves_string_embedding_model(monkeypatch):
+    backend = HashEmbedder()
+    monkeypatch.setattr(
+        "bertopic_ja._model.select_backend",
+        lambda model, language=None: backend,
+    )
+    model = BERTopic(
+        embedding_model="some/model-name",
+        min_topic_size=4,
+        n_neighbors=5,
+        reduce_outliers=False,
+    )
+    topics, _probs = model.fit_transform(_documents())
+    assert model.embedding_model is backend
+    assert len(topics) == 16
