@@ -66,6 +66,14 @@ def test_protect_keeps_fillers_and_overrides_stopwords():
     assert "こと" not in reasons
 
 
+def test_optional_function_words_use_normalized_forms():
+    words = ["為る", "有る", "成る", "居る", "こと", "物", "為"]
+    explained = explain_text("したことがあり、部屋にいた。見たもののためになった。", Config(exclude=words))
+    assert explained["kept"] == ["部屋", "見る"]
+    shape = explain_text("丁寧で簡単な説明", Config(pos=["名詞", "形容詞", "動詞", "形状詞"]))
+    assert shape["kept"] == ["丁寧", "簡単", "説明"]
+
+
 def test_analyzer_is_picklable():
     vectorizer = build_vectorizer(Config())
     restored = pickle.loads(pickle.dumps(vectorizer))

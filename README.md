@@ -102,6 +102,91 @@ topic_model = BERTopic.from_yaml("config.yaml", min_topic_size=8)
 topic_model.to_yaml("config.yaml")
 ```
 
+## TIPS
+
+初期値のまま使うときの足し方です。語のリストは任意で、指定しない限り外れません。
+
+### 機能語を外す
+
+「する」「ある」「なる」「いる」「こと」は残ります。外すときは、出てくる正規化形を `exclude` か `stopwords` に書きます。
+
+| 文中 | 出てくる形 |
+| --- | --- |
+| する、した | 為る |
+| ある、あった | 有る |
+| なる、なった | 成る |
+| いる、いた | 居る |
+| こと | こと |
+| もの | 物 |
+| ため | 為 |
+
+「もの」は「物」、「ため」は「為」になり、1文字なので指定しなくても出ません。リストに入れておいても同じです。
+
+```python
+topic_model.exclude("為る", "有る", "成る", "居る", "こと", "物", "為")
+```
+
+```python
+topic_model = BERTopic(
+    stopwords=["為る", "有る", "成る", "居る", "こと", "物", "為"]
+)
+```
+
+```yaml
+exclude:
+  - 為る
+  - 有る
+  - 成る
+  - 居る
+  - こと
+  - 物
+  - 為
+```
+
+`stopwords` に同じ語を書いても同じです。
+
+### 名詞だけにする
+
+```python
+topic_model = BERTopic(pos=["名詞"])
+```
+
+```yaml
+pos:
+  - 名詞
+```
+
+### 形状詞を足す
+
+「丁寧」「簡単」「静か」は形状詞です。初期値の品詞には入りません。
+
+```python
+topic_model = BERTopic(pos=["名詞", "形容詞", "動詞", "形状詞"])
+```
+
+```yaml
+pos:
+  - 名詞
+  - 形容詞
+  - 動詞
+  - 形状詞
+```
+
+### 外す語を見てから決める
+
+`fit_transform` のあと、`suggest()` で多くのトピックに出る語を見ます。`preview_exclude` は設定を変えずに、外したあとのトピック語を返します。決めたら `exclude` します。語を外すのに `refit` は要りません。`refit` は `min_topic_size` や `nr_topics` でクラスタの粗さだけを変えます。
+
+```python
+topic_model.suggest()
+topic_model.preview_exclude(["為る", "こと"])
+topic_model.exclude("為る", "こと")
+topic_model.refit(min_topic_size=8)
+```
+
+### 除外は出てくる形で書く
+
+動詞と形容詞は正規化形です。「見た」は「見る」、「高かった」は「高い」、「した」は「為る」です。`exclude` と `stopwords` にはその形を書きます。
+
 ## 公式との違い
 
 公式の `BERTopic(language="multilingual")` は日本語の文をベクトルにできます。トピック語を作るトークナイザは英語向けの空白区切りのままで、日本語では単語に切れません。このパッケージはそのトークナイザを Sudachi に置き換え、品詞とストップワードを設定にし、語の除外とクラスタの再調整をメソッドにしています。
