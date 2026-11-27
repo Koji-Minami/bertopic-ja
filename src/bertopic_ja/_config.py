@@ -17,7 +17,21 @@ _FIELDS = (
     "exclude",
     "protect",
     "fillers",
+    "pos",
+    "stopwords",
 )
+
+# 省略したときの品詞とストップワード。定義はトークナイザ側にあり、ここでは循環を避ける。
+def _default_pos() -> list[str]:
+    from bertopic_ja._tokenizer import DEFAULT_POS
+
+    return list(DEFAULT_POS)
+
+
+def _default_stopwords() -> list[str]:
+    from bertopic_ja._tokenizer import DEFAULT_STOPWORDS
+
+    return list(DEFAULT_STOPWORDS)
 
 
 @dataclass
@@ -32,6 +46,8 @@ class Config:
     exclude: list[str] = field(default_factory=list)
     protect: list[str] = field(default_factory=list)
     fillers: list[str] = field(default_factory=list)
+    pos: list[str] = field(default_factory=_default_pos)
+    stopwords: list[str] = field(default_factory=_default_stopwords)
 
     @classmethod
     def from_mapping(cls, data: dict[str, Any] | None, overrides: dict[str, Any] | None = None) -> Config:
@@ -50,6 +66,14 @@ class Config:
                 raise ValueError(f"{key} は文字列のリストです。")
             else:
                 merged[key] = [str(item) for item in value]
+        for key in ("pos", "stopwords"):
+            if key not in merged or merged[key] is None:
+                merged.pop(key, None)
+                continue
+            value = merged[key]
+            if not isinstance(value, list):
+                raise ValueError(f"{key} は文字列のリストです。")
+            merged[key] = [str(item) for item in value]
         if "min_topic_size" in merged:
             merged["min_topic_size"] = int(merged["min_topic_size"])
         if "n_neighbors" in merged and merged["n_neighbors"] is not None:
@@ -76,6 +100,8 @@ class Config:
             "exclude": list(self.exclude),
             "protect": list(self.protect),
             "fillers": list(self.fillers),
+            "pos": list(self.pos),
+            "stopwords": list(self.stopwords),
         }
 
     def to_yaml(self, path: str | Path) -> None:
