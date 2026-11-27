@@ -1,7 +1,7 @@
 import pickle
 
 from bertopic_ja._config import Config
-from bertopic_ja._tokenizer import DEFAULT_STOPWORDS, build_vectorizer, explain_text, strip_fillers
+from bertopic_ja._tokenizer import build_vectorizer, explain_text, strip_fillers
 
 
 def test_topic_words_keep_nouns_and_drop_fillers():
@@ -35,49 +35,33 @@ def test_nouns_only_pos_drops_verbs_and_adjectives():
     assert dropped["使っ"] == "動詞"
 
 
-def test_formal_nouns_and_light_verbs_are_dropped():
-    explained = explain_text("レシピを見ることができる。計画をすることになった。", Config())
-    assert explained["kept"] == ["レシピ", "計画"]
-    dropped = {item["token"]: item["reason"] for item in explained["dropped"]}
-    assert dropped["こと"] == "ストップワード"
-    assert dropped["見る"] == "非自立"
-    assert dropped["できる"] == "非自立"
-    assert dropped["する"] == "非自立"
-    assert dropped["なっ"] == "非自立"
-
-    forms = explain_text("確認のためのものを部屋にいることがある", Config())
-    assert forms["kept"] == ["確認", "部屋"]
-    reasons = {item["token"]: item["reason"] for item in forms["dropped"]}
-    assert reasons["ため"] == "ストップワード"
-    assert reasons["もの"] == "ストップワード"
-    assert reasons["いる"] == "非自立"
-    assert reasons["ある"] == "非自立"
-
-    grammatical = explain_text("そのつもりでそのとおりに作った", Config())
-    assert grammatical["kept"] == ["作る"]
-    grammatical_reasons = {item["token"]: item["reason"] for item in grammatical["dropped"]}
-    assert grammatical_reasons["つもり"] == "ストップワード"
-    assert grammatical_reasons["とおり"] == "ストップワード"
+def test_default_keeps_verbs_and_formal_nouns():
+    explained = explain_text("良い方法を見て行く。レシピを見ることができる。", Config())
+    assert explained["kept"] == ["良い", "方法", "見る", "行く", "レシピ", "見る", "こと", "出来る"]
+    assert Config().stopwords == []
 
 
-def test_stopwords_can_be_replaced_or_extended():
-    replaced = explain_text("作ったことがある", Config(stopwords=[]))
-    assert "こと" in replaced["kept"]
-    assert "作る" in replaced["kept"]
-    assert "有る" not in replaced["kept"]
+def test_exclude_and_stopwords_drop_only_listed_words():
+    excluded = explain_text("良い方法を見て行く", Config(exclude=["見る"]))
+    assert excluded["kept"] == ["良い", "方法", "行く"]
+    reasons = {item["token"]: item["reason"] for item in excluded["dropped"]}
+    assert reasons["見"] == "除外"
 
-    extended = explain_text("病院のレシピ", Config(stopwords=[*DEFAULT_STOPWORDS, "病院"]))
-    assert extended["kept"] == ["レシピ"]
+    stopped = explain_text("作ったことがある", Config(stopwords=["こと"]))
+    assert stopped["kept"] == ["作る", "有る"]
+    stopped_reasons = {item["token"]: item["reason"] for item in stopped["dropped"]}
+    assert stopped_reasons["こと"] == "ストップワード"
 
 
-def test_protect_and_exclude_still_apply_with_stopwords():
-    explained = explain_text(
-        "製品を作ったことがある",
-        Config(protect=["こと"], exclude=["製品"]),
-    )
-    assert "こと" in explained["kept"]
-    assert "作る" in explained["kept"]
-    reasons = {item["token"]: item["reason"] for item in explained["dropped"]}
+def test_protect_keeps_fillers_and_overrides_stopwords():
+    explained = explain_text("えー、病院です", Config(protect=["えー"]))
+    assert "えー" in explained["kept"]
+    assert "病院" in explained["kept"]
+
+    kept = explain_text("製品を作ったことがある", Config(protect=["こと"], exclude=["製品"], stopwords=["こと"]))
+    assert "こと" in kept["kept"]
+    assert "作る" in kept["kept"]
+    reasons = {item["token"]: item["reason"] for item in kept["dropped"]}
     assert reasons["製品"] == "除外"
     assert "こと" not in reasons
 

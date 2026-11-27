@@ -35,8 +35,7 @@ def test_round_trip_yaml(tmp_path):
     assert loaded.exclude == ["天気"]
     assert loaded.nr_topics == "auto"
     assert loaded.pos == ["名詞", "形容詞", "動詞"]
-    assert "こと" in loaded.stopwords
-    assert "する" in loaded.stopwords
+    assert loaded.stopwords == []
 
 
 def test_yaml_pos_and_stopwords_override(tmp_path):

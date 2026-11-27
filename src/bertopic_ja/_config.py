@@ -21,17 +21,10 @@ _FIELDS = (
     "stopwords",
 )
 
-# 省略したときの品詞とストップワード。定義はトークナイザ側にあり、ここでは循環を避ける。
 def _default_pos() -> list[str]:
     from bertopic_ja._tokenizer import DEFAULT_POS
 
     return list(DEFAULT_POS)
-
-
-def _default_stopwords() -> list[str]:
-    from bertopic_ja._tokenizer import DEFAULT_STOPWORDS
-
-    return list(DEFAULT_STOPWORDS)
 
 
 @dataclass
@@ -47,7 +40,7 @@ class Config:
     protect: list[str] = field(default_factory=list)
     fillers: list[str] = field(default_factory=list)
     pos: list[str] = field(default_factory=_default_pos)
-    stopwords: list[str] = field(default_factory=_default_stopwords)
+    stopwords: list[str] = field(default_factory=list)
 
     @classmethod
     def from_mapping(cls, data: dict[str, Any] | None, overrides: dict[str, Any] | None = None) -> Config:
@@ -58,7 +51,7 @@ class Config:
         if unknown:
             names = ", ".join(unknown)
             raise ValueError(f"未知の設定項目です: {names}")
-        for key in ("exclude", "protect", "fillers"):
+        for key in ("exclude", "protect", "fillers", "stopwords"):
             value = merged.get(key)
             if value is None:
                 merged[key] = []
@@ -66,14 +59,12 @@ class Config:
                 raise ValueError(f"{key} は文字列のリストです。")
             else:
                 merged[key] = [str(item) for item in value]
-        for key in ("pos", "stopwords"):
-            if key not in merged or merged[key] is None:
-                merged.pop(key, None)
-                continue
-            value = merged[key]
-            if not isinstance(value, list):
-                raise ValueError(f"{key} は文字列のリストです。")
-            merged[key] = [str(item) for item in value]
+        if "pos" not in merged or merged["pos"] is None:
+            merged.pop("pos", None)
+        elif not isinstance(merged["pos"], list):
+            raise ValueError("pos は文字列のリストです。")
+        else:
+            merged["pos"] = [str(item) for item in merged["pos"]]
         if "min_topic_size" in merged:
             merged["min_topic_size"] = int(merged["min_topic_size"])
         if "n_neighbors" in merged and merged["n_neighbors"] is not None:

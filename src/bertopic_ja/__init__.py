@@ -9,7 +9,7 @@ https://arxiv.org/abs/2203.05794
 """
 
 from bertopic_ja._model import BERTopic
-from bertopic_ja._tokenizer import DEFAULT_POS, DEFAULT_STOPWORDS
+from bertopic_ja._tokenizer import DEFAULT_POS
 
-__all__ = ["BERTopic", "DEFAULT_POS", "DEFAULT_STOPWORDS"]
+__all__ = ["BERTopic", "DEFAULT_POS"]
 __version__ = "0.1.2"

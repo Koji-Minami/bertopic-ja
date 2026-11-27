@@ -33,47 +33,6 @@ _KEEP_WHEN_STRIPPING = frozenset({"名詞", "動詞", "形容詞", "連体詞"})
 # トピック語に使う品詞。Sudachi / UniDic の品詞大分類。
 DEFAULT_POS: tuple[str, ...] = ("名詞", "形容詞", "動詞")
 
-# 形式名詞と、軽い動詞・補助的な動詞。
-# 表層・正規化形・辞書形のいずれかが一致したら落とす。
-# 正規化で別表記になる語（する→為る、ある→有る、いる→居る）は両方入れておく。
-DEFAULT_STOPWORDS: tuple[str, ...] = (
-    "こと",
-    "事",
-    "もの",
-    "もん",
-    "ため",
-    "よう",
-    "ところ",
-    "とこ",
-    "とき",
-    "の",
-    "ほう",
-    "方",
-    "わけ",
-    "はず",
-    "つもり",
-    "まま",
-    "とおり",
-    "ゆえ",
-    "せい",
-    "する",
-    "為る",
-    "ある",
-    "有る",
-    "在る",
-    "なる",
-    "成る",
-    "いる",
-    "おる",
-    "居る",
-    "できる",
-    "出来る",
-    "れる",
-    "られる",
-    "せる",
-    "させる",
-)
-
 _NOUN_SUBCATEGORIES_TO_DROP = frozenset({"代名詞", "数詞"})
 
 
@@ -154,7 +113,7 @@ def _hosts_adjectival_suffix(morpheme) -> bool:
     return bool(pos) and pos[0] in {"動詞", "名詞", "形容詞"}
 
 
-def _compound_readings(host, suffix) -> tuple[str, str, str, tuple[str, ...]]:
+def _compound_readings(host, suffix) -> tuple[str, str, tuple[str, ...]]:
     """「にくい」「やすい」などを、前の語とつないで一語の形容詞にする。
 
     Sudachi は「使いにくかった」を「使う」と「難い」に分ける。トピック語は
@@ -167,11 +126,11 @@ def _compound_readings(host, suffix) -> tuple[str, str, str, tuple[str, ...]]:
     stem = host_surface if host_pos and host_pos[0] == "動詞" else host_normalized
     lemma = f"{stem}{suffix_dictionary}"
     surface = f"{host_surface}{suffix_surface}"
-    return surface, lemma, lemma, ("形容詞", "一般", "*", "*", "形容詞", "終止形-一般")
+    return surface, lemma, ("形容詞", "一般", "*", "*", "形容詞", "終止形-一般")
 
 
 def _iter_tokens(text: str):
-    """トピック語の候補を、(表層, 正規化形, 辞書形, 品詞) で返す。"""
+    """トピック語の候補を、(表層, 正規化形, 品詞) で返す。"""
     morphemes = list(iter_morphemes(text))
     index = 0
     while index < len(morphemes):
@@ -181,8 +140,8 @@ def _iter_tokens(text: str):
             yield _compound_readings(current, nxt)
             index += 2
             continue
-        surface, normalized, dictionary = _readings(current)
-        yield surface, normalized, dictionary, _pos(current)
+        surface, normalized, _dictionary = _readings(current)
+        yield surface, normalized, _pos(current)
         index += 1
 
 
@@ -207,11 +166,10 @@ def _collect(
 ) -> tuple[list[str], list[dict[str, str]]]:
     kept: list[str] = []
     dropped: list[dict[str, str]] = []
-    for surface, token, dictionary, pos in _iter_tokens(text):
+    for surface, token, pos in _iter_tokens(text):
         reason = _drop_reason(
             token,
             surface,
-            dictionary,
             pos,
             protect,
             exclude,
@@ -228,7 +186,6 @@ def _collect(
 def _drop_reason(
     token: str,
     surface: str,
-    dictionary: str,
     pos: tuple[str, ...],
     protect: frozenset[str],
     exclude: frozenset[str],
@@ -245,12 +202,10 @@ def _drop_reason(
         return "感動詞"
     if token in exclude or surface in exclude:
         return "除外"
+    if token in stopwords or surface in stopwords:
+        return "ストップワード"
     if pos_main not in allowed_pos:
         return pos_main or "品詞"
-    if any("非自立" in part for part in pos):
-        return "非自立"
-    if stopwords.intersection((token, surface, dictionary)):
-        return "ストップワード"
     if pos_main == "名詞" and pos_sub in _NOUN_SUBCATEGORIES_TO_DROP:
         return pos_sub
     if len(token) <= 1:

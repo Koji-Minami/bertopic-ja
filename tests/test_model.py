@@ -94,6 +94,17 @@ def test_default_analyzer_keeps_lemmas():
     model = BERTopic(embedding_model=HashEmbedder(), min_topic_size=4, n_neighbors=5)
     tokens = model.vectorizer_model.build_analyzer()("使いにくかった製品は高かった。道具を使った。")
     assert tokens == ["使いにくい", "製品", "高い", "道具", "使う"]
+    assert model.ja_config.stopwords == []
+
+
+def test_exclude_drops_a_verb_without_a_preset_list():
+    model = BERTopic(embedding_model=HashEmbedder(), min_topic_size=4, n_neighbors=5, stopwords=["こと"])
+    analyzer = model.vectorizer_model.build_analyzer()
+    assert "見る" in analyzer("良い方法を見る")
+    assert "こと" not in analyzer("作ったことがある")
+    model.exclude("見る")
+    assert "見る" not in model.vectorizer_model.build_analyzer()("良い方法を見る")
+    assert "方法" in model.vectorizer_model.build_analyzer()("良い方法を見る")
 
 
 def test_embeddings_follow_the_documents():

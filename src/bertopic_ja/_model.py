@@ -14,13 +14,7 @@ from hdbscan import HDBSCAN
 from umap import UMAP
 
 from bertopic_ja._config import Config
-from bertopic_ja._tokenizer import (
-    DEFAULT_POS,
-    DEFAULT_STOPWORDS,
-    build_vectorizer,
-    explain_text,
-    strip_fillers,
-)
+from bertopic_ja._tokenizer import DEFAULT_POS, build_vectorizer, explain_text, strip_fillers
 
 
 class BERTopic(_BERTopic):
@@ -58,7 +52,7 @@ class BERTopic(_BERTopic):
             protect=list(protect or []),
             fillers=list(fillers or []),
             pos=list(DEFAULT_POS if pos is None else pos),
-            stopwords=list(DEFAULT_STOPWORDS if stopwords is None else stopwords),
+            stopwords=list(stopwords or []),
         )
         self._documents: list[str] = []
         self._embeddings = None
