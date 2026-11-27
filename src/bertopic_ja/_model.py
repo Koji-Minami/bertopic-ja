@@ -22,7 +22,7 @@ class BERTopic(_BERTopic):
 
     呼び出し方は公式の BERTopic と同じです。埋め込みの初期値は
     ``language="multilingual"`` です。トピック語は Sudachi（モード C）の
-    名詞・形容詞・動詞で、フィラーはトピック語からだけ外します。
+    名詞・形容詞・動詞・形状詞で、フィラーはトピック語からだけ外します。
 
     これは Maarten Grootendorst の BERTopic の公式サブプロジェクトでは
     ありません。https://github.com/MaartenGr/BERTopic
