@@ -34,7 +34,7 @@ def test_round_trip_yaml(tmp_path):
     assert loaded.min_topic_size == 8
     assert loaded.exclude == ["天気"]
     assert loaded.nr_topics == "auto"
-    assert loaded.pos == ["名詞", "形容詞", "動詞"]
+    assert loaded.pos == ["名詞", "形容詞", "動詞", "形状詞"]
     assert loaded.stopwords == []
 
 

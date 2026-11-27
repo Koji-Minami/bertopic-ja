@@ -1,6 +1,6 @@
 """Sudachi によるトピック語の抽出。
 
-初期値では名詞・形容詞・動詞を正規化形で残す。フィラーはトピック語から外す。
+初期値では名詞・形容詞・動詞・形状詞を正規化形で残す。フィラーはトピック語から外す。
 本文からの削除は fillers を渡したときだけで、そのときもトークン単位で行い、
 名詞・動詞・形容詞・連体詞は残す。
 """
@@ -31,7 +31,7 @@ FILLER_TOKENS = frozenset(
 _KEEP_WHEN_STRIPPING = frozenset({"名詞", "動詞", "形容詞", "連体詞"})
 
 # トピック語に使う品詞。Sudachi / UniDic の品詞大分類。
-DEFAULT_POS: tuple[str, ...] = ("名詞", "形容詞", "動詞")
+DEFAULT_POS: tuple[str, ...] = ("名詞", "形容詞", "動詞", "形状詞")
 
 _NOUN_SUBCATEGORIES_TO_DROP = frozenset({"代名詞", "数詞"})
 
